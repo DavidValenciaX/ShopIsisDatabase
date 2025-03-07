@@ -84,3 +84,8 @@ INSERT INTO currencies (code, name, symbol) VALUES
 ('CAD', 'Canadian Dollar', 'C$'),
 ('AUD', 'Australian Dollar', 'A$'),
 ('COP', 'Colombian Peso', '$');
+
+-- Insertar los tipos de descuento iniciales
+INSERT INTO discount_types (name, description) VALUES 
+('percentage', 'Discount as a percentage of the total amount'),
+('fixed_amount', 'Discount as a fixed monetary amount');
