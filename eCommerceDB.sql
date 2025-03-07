@@ -95,7 +95,7 @@ CREATE TABLE orders (
     email VARCHAR(255) NOT NULL,
     credit_card_number VARCHAR(255) NOT NULL,
     invoice_number VARCHAR(100),
-    payment_method VARCHAR(50),
+    payment_method_id INTEGER REFERENCES payment_methods(id) ON DELETE RESTRICT,
     payment_status VARCHAR(50) CHECK (payment_status IN ('pending', 'partial', 'paid', 'refunded')) DEFAULT 'pending',
     shipping_method VARCHAR(100),
     shipping_cost DECIMAL(10, 2) DEFAULT 0,
@@ -266,6 +266,16 @@ CREATE TABLE returned_inventory (
     condition VARCHAR(50) NOT NULL,
     sales_return_item_id INTEGER REFERENCES sales_return_items(id),
     notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de Métodos de Pago
+CREATE TABLE payment_methods (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
