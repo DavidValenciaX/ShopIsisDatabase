@@ -200,7 +200,8 @@ CREATE TABLE discounts (
     times_used INTEGER DEFAULT 0,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CHECK (usage_limit IS NULL OR times_used <= usage_limit)
 );
 
 -- Tabla de Direcciones de Envío
