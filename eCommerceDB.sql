@@ -94,16 +94,16 @@ CREATE TABLE orders (
     email VARCHAR(255) NOT NULL,
     credit_card_number VARCHAR(255) NOT NULL,
     invoice_number VARCHAR(100),
-    payment_method_id INTEGER REFERENCES payment_methods(id) ON DELETE RESTRICT,
-    shipping_method VARCHAR(100),
     shipping_cost DECIMAL(10, 2) DEFAULT 0,
     tax_amount DECIMAL(10, 2) DEFAULT 0,
     discount_amount DECIMAL(10, 2) DEFAULT 0,
     notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    payment_method_id INTEGER REFERENCES payment_methods(id) ON DELETE RESTRICT,
+    shipping_method_id INTEGER REFERENCES shipping_methods(id) ON DELETE RESTRICT,
     status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
-    payment_status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT
+    payment_status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tabla de Productos en una Orden
@@ -124,9 +124,9 @@ CREATE TABLE suppliers (
     address VARCHAR(255) NOT NULL,
     tax_id VARCHAR(100),
     notes TEXT,
+    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tabla de Inventario
@@ -153,11 +153,11 @@ CREATE TABLE purchase_orders (
     actual_delivery_date TIMESTAMP,
     total_amount DECIMAL(12, 2) NOT NULL DEFAULT 0,
     notes TEXT,
+    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
+    payment_status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
     created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
-    payment_status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tabla de Elementos de Compras
@@ -168,9 +168,9 @@ CREATE TABLE purchase_order_items (
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     unit_price DECIMAL(10, 2) NOT NULL,
     received_quantity INTEGER DEFAULT 0 CHECK (received_quantity >= 0),
+    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tabla para Historial de Movimientos de Inventario
@@ -197,7 +197,7 @@ CREATE TABLE supplier_products (
     supplier_product_name VARCHAR(255),
     unit_cost DECIMAL(10, 2) NOT NULL,
     minimum_order_quantity INTEGER DEFAULT 1,
-    lead_time_days INTEGER, -- Tiempo estimado de entrega en días
+    lead_time_days INTEGER,
     is_preferred_supplier BOOLEAN DEFAULT FALSE,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -213,9 +213,9 @@ CREATE TABLE sales_returns (
     total_amount DECIMAL(10, 2) NOT NULL,
     reason TEXT,
     processed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tabla para Items de Devoluciones de Ventas
@@ -240,9 +240,9 @@ CREATE TABLE purchase_returns (
     total_amount DECIMAL(10, 2) NOT NULL,
     reason TEXT,
     processed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tabla para Items de Devoluciones a Proveedores
@@ -276,6 +276,18 @@ CREATE TABLE payment_methods (
     name VARCHAR(50) NOT NULL UNIQUE,
     description VARCHAR(255),
     active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de Métodos de Envío
+CREATE TABLE shipping_methods (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    active BOOLEAN DEFAULT TRUE,
+    price DECIMAL(10, 2) DEFAULT 0,
+    estimated_days INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -347,4 +359,17 @@ INSERT INTO status_types (name, category_id, description) VALUES
 ('approved', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución aprobada'),
 ('rejected', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución rechazada'),
 ('completed', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución completada'),
-('sent', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución enviada'),
+('sent', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución enviada');
+
+-- Insertar datos iniciales en shipping_methods
+INSERT INTO shipping_methods (name, description, price, estimated_days) VALUES
+('Standard Shipping', 'Regular delivery service (3-5 business days)', 5.99, 5),
+('Express Shipping', 'Fast delivery service (1-2 business days)', 12.99, 2),
+('Next Day Delivery', 'Guaranteed next business day delivery', 19.99, 1),
+('Free Shipping', 'Free standard shipping on qualifying orders', 0.00, 7),
+('In-Store Pickup', 'Pick up your order at the store', 0.00, 0),
+('Curbside Pickup', 'Pick up your order at the store curb', 0.00, 0),
+('Local Delivery', 'Local delivery service (same day)', 4.99, 1),
+('International Shipping', 'International delivery service (7-14 days)', 19.99, 14),
+('Custom Shipping', 'Custom delivery service', 0.00, 0),
+('Cash on Delivery', 'Pay when you receive your order', 0.00, 0);
