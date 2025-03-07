@@ -96,10 +96,6 @@ CREATE TABLE orders (
     tax_amount DECIMAL(10, 2) DEFAULT 0,
     discount_amount DECIMAL(10, 2) DEFAULT 0,
     notes TEXT,
-    payment_token VARCHAR(255),
-    payment_gateway_name VARCHAR(100),
-    last_four_digits VARCHAR(4),
-    card_brand  VARCHAR(50),
     user_payment_method_id INTEGER REFERENCES user_payment_methods(id),
     shipping_method_id INTEGER REFERENCES shipping_methods(id) ON DELETE RESTRICT,
     status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
@@ -294,17 +290,16 @@ CREATE TABLE user_payment_methods (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. Crear tabla para transacciones de pago
+-- Crear tabla para transacciones de pago
 CREATE TABLE payment_transactions (
     id SERIAL PRIMARY KEY,
-    order_id INTEGER REFERENCES orders(id) ON DELETE SET NULL,
-    payment_method_id INTEGER REFERENCES payment_methods(id) ON DELETE RESTRICT,
-    payment_token VARCHAR(255),
+    order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    user_payment_method_id INTEGER REFERENCES user_payment_methods(id) ON DELETE RESTRICT,
     transaction_id VARCHAR(255) NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
     currency VARCHAR(3) DEFAULT 'USD',
     status VARCHAR(50) NOT NULL,
-    provider_response TEXT,
+    provider_response JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
