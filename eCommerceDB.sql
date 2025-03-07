@@ -68,8 +68,9 @@ CREATE TABLE products (
     description TEXT,
     dimensions VARCHAR(100),
     weight DECIMAL(10, 2),
-    brand_id INTEGER NOT NULL REFERENCES brands(id) ON DELETE RESTRICT,
     price DECIMAL(10, 2) NOT NULL,
+    currency_id INTEGER NOT NULL REFERENCES currencies(id) ON DELETE RESTRICT,
+    brand_id INTEGER NOT NULL REFERENCES brands(id) ON DELETE RESTRICT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
