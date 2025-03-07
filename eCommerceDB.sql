@@ -225,27 +225,6 @@ CREATE TABLE transaction_types (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabla para Historial de Movimientos de Inventario (versión normalizada)
-CREATE TABLE inventory_transactions (
-    id SERIAL PRIMARY KEY,
-    product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-    quantity INTEGER NOT NULL,
-    transaction_type_id INTEGER NOT NULL REFERENCES transaction_types(id) ON DELETE RESTRICT,
-    order_id INTEGER REFERENCES orders(id) ON DELETE SET NULL,
-    product_order_id INTEGER REFERENCES product_orders(id) ON DELETE SET NULL,
-    purchase_order_id INTEGER REFERENCES purchase_orders(id) ON DELETE SET NULL,
-    purchase_order_item_id INTEGER REFERENCES purchase_order_items(id) ON DELETE SET NULL,
-    sales_return_id INTEGER REFERENCES sales_returns(id) ON DELETE SET NULL,
-    sales_return_item_id INTEGER REFERENCES sales_return_items(id) ON DELETE SET NULL,
-    purchase_return_id INTEGER REFERENCES purchase_returns(id) ON DELETE SET NULL,
-    purchase_return_item_id INTEGER REFERENCES purchase_return_items(id) ON DELETE SET NULL,
-    reason TEXT,
-    previous_stock INTEGER NOT NULL,
-    new_stock INTEGER NOT NULL,
-    performed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Tabla para Productos de Proveedores (catálogo de productos por proveedor)
 CREATE TABLE supplier_products (
     id SERIAL PRIMARY KEY,
@@ -323,6 +302,27 @@ CREATE TABLE purchase_return_items (
     reason VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla para Historial de Movimientos de Inventario
+CREATE TABLE inventory_transactions (
+    id SERIAL PRIMARY KEY,
+    product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL,
+    transaction_type_id INTEGER NOT NULL REFERENCES transaction_types(id) ON DELETE RESTRICT,
+    order_id INTEGER REFERENCES orders(id) ON DELETE SET NULL,
+    product_order_id INTEGER REFERENCES product_orders(id) ON DELETE SET NULL,
+    purchase_order_id INTEGER REFERENCES purchase_orders(id) ON DELETE SET NULL,
+    purchase_order_item_id INTEGER REFERENCES purchase_order_items(id) ON DELETE SET NULL,
+    sales_return_id INTEGER REFERENCES sales_returns(id) ON DELETE SET NULL,
+    sales_return_item_id INTEGER REFERENCES sales_return_items(id) ON DELETE SET NULL,
+    purchase_return_id INTEGER REFERENCES purchase_returns(id) ON DELETE SET NULL,
+    purchase_return_item_id INTEGER REFERENCES purchase_return_items(id) ON DELETE SET NULL,
+    reason TEXT,
+    previous_stock INTEGER NOT NULL,
+    new_stock INTEGER NOT NULL,
+    performed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tabla para Inventario Devuelto (returned_inventory)
