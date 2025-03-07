@@ -59,3 +59,28 @@ INSERT INTO shipping_methods (name, description, price, estimated_days) VALUES
 ('International Shipping', 'International delivery service (7-14 days)', 19.99, 14),
 ('Custom Shipping', 'Custom delivery service', 0.00, 0),
 ('Cash on Delivery', 'Pay when you receive your order', 0.00, 0);
+
+-- Insertar los tipos de transacciones predefinidos
+INSERT INTO transaction_types (name, description) VALUES
+('purchase', 'Ingreso de inventario por compra a proveedores'),
+('sale', 'Salida de inventario por venta a clientes'),
+('adjustment', 'Ajuste manual de inventario'),
+('return', 'Devolución de productos'),
+('transfer', 'Transferencia entre ubicaciones');
+
+-- Insertar valores iniciales para las condiciones de devolución
+INSERT INTO return_conditions (name) VALUES
+('new'),
+('damaged'),
+('defective'),
+('other');
+
+-- Insertar monedas comunes
+INSERT INTO currencies (code, name, symbol) VALUES
+('USD', 'US Dollar', '$'),
+('EUR', 'Euro', '€'),
+('GBP', 'British Pound', '£'),
+('JPY', 'Japanese Yen', '¥'),
+('CAD', 'Canadian Dollar', 'C$'),
+('AUD', 'Australian Dollar', 'A$'),
+('COP', 'Colombian Peso', '$');

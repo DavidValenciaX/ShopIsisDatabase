@@ -171,12 +171,21 @@ CREATE TABLE purchase_order_items (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabla para Historial de Movimientos de Inventario
+-- Tabla para Tipos de Transacciones de Inventario
+CREATE TABLE transaction_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla para Historial de Movimientos de Inventario (versión normalizada)
 CREATE TABLE inventory_transactions (
     id SERIAL PRIMARY KEY,
     product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     quantity INTEGER NOT NULL,
-    transaction_type VARCHAR(50) CHECK (transaction_type IN ('purchase', 'sale', 'adjustment', 'return', 'transfer')) NOT NULL,
+    transaction_type_id INTEGER NOT NULL REFERENCES transaction_types(id) ON DELETE RESTRICT,
     reference_id INTEGER,
     reference_type VARCHAR(50),
     reason TEXT,
@@ -216,6 +225,15 @@ CREATE TABLE sales_returns (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabla para Condiciones de Devolución
+CREATE TABLE return_conditions (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Tabla para Items de Devoluciones de Ventas
 CREATE TABLE sales_return_items (
     id SERIAL PRIMARY KEY,
@@ -225,7 +243,7 @@ CREATE TABLE sales_return_items (
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     unit_price DECIMAL(10, 2) NOT NULL,
     reason VARCHAR(255),
-    condition VARCHAR(50) CHECK (condition IN ('new', 'damaged', 'defective', 'other')),
+    condition_id INTEGER REFERENCES return_conditions(id) ON DELETE RESTRICT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -290,6 +308,16 @@ CREATE TABLE user_payment_methods (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabla para Monedas (Currencies)
+CREATE TABLE currencies (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(3) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    symbol VARCHAR(5),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Crear tabla para transacciones de pago
 CREATE TABLE payment_transactions (
     id SERIAL PRIMARY KEY,
@@ -297,7 +325,7 @@ CREATE TABLE payment_transactions (
     user_payment_method_id INTEGER REFERENCES user_payment_methods(id) ON DELETE RESTRICT,
     transaction_id VARCHAR(255) NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
-    currency VARCHAR(3) DEFAULT 'USD',
+    currency_id INTEGER NOT NULL REFERENCES currencies(id) ON DELETE RESTRICT,
     status VARCHAR(50) NOT NULL,
     provider_response JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
