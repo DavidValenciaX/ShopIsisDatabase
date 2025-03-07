@@ -82,6 +82,50 @@ CREATE TABLE cart_items (
     quantity INTEGER NOT NULL CHECK (quantity > 0)
 );
 
+CREATE TABLE user_payment_methods (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    payment_token VARCHAR(255) NOT NULL,
+    payment_gateway_name VARCHAR(100) NOT NULL,
+    is_default BOOLEAN DEFAULT FALSE,
+    details JSONB NOT NULL,
+    payment_method_id INTEGER REFERENCES payment_methods(id) ON DELETE RESTRICT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de Métodos de Envío
+CREATE TABLE shipping_methods (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    active BOOLEAN DEFAULT TRUE,
+    price DECIMAL(10, 2) DEFAULT 0,
+    estimated_days INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla para Categorías de Estado
+CREATE TABLE status_categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla para Tipos de Estado
+CREATE TABLE status_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    category_id INTEGER NOT NULL REFERENCES status_categories(id) ON DELETE RESTRICT,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(name, category_id)
+);
+
 -- Tabla de Órdenes/Pedidos
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
@@ -107,9 +151,10 @@ CREATE TABLE orders (
 -- Tabla de Productos en una Orden
 CREATE TABLE product_orders (
     id SERIAL PRIMARY KEY,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    unit_price DECIMAL(10, 2) NOT NULL,
     order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-    product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-    quantity INTEGER NOT NULL CHECK (quantity > 0)
+    product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE CASCADE
 );
 
 -- Tabla de Proveedores
@@ -138,7 +183,7 @@ CREATE TABLE inventory (
     last_restock_date TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(product_id)
+    UNIQUE(product_id, location)
 );
 
 -- Tabla de Compras a Proveedores
@@ -239,7 +284,7 @@ CREATE TABLE sales_return_items (
     id SERIAL PRIMARY KEY,
     sales_return_id INTEGER NOT NULL REFERENCES sales_returns(id) ON DELETE CASCADE,
     product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-    product_order_id INTEGER REFERENCES product_orders(id) ON DELETE SET NULL,
+    product_order_id INTEGER NOT NULL REFERENCES product_orders(id) ON DELETE SET NULL,
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     unit_price DECIMAL(10, 2) NOT NULL,
     reason VARCHAR(255),
@@ -279,7 +324,7 @@ CREATE TABLE returned_inventory (
     id SERIAL PRIMARY KEY,
     product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     quantity INTEGER NOT NULL DEFAULT 0,
-    condition VARCHAR(50) NOT NULL,
+    condition_id INTEGER REFERENCES return_conditions(id) ON DELETE RESTRICT,
     sales_return_item_id INTEGER REFERENCES sales_return_items(id),
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -292,18 +337,6 @@ CREATE TABLE payment_methods (
     name VARCHAR(50) NOT NULL UNIQUE,
     description VARCHAR(255),
     active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE user_payment_methods (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    payment_token VARCHAR(255) NOT NULL,
-    payment_gateway_name VARCHAR(100) NOT NULL,
-    is_default BOOLEAN DEFAULT FALSE,
-    details JSONB NOT NULL,
-    payment_method_id INTEGER REFERENCES payment_methods(id) ON DELETE RESTRICT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -330,36 +363,4 @@ CREATE TABLE payment_transactions (
     provider_response JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Tabla de Métodos de Envío
-CREATE TABLE shipping_methods (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE,
-    description VARCHAR(255),
-    active BOOLEAN DEFAULT TRUE,
-    price DECIMAL(10, 2) DEFAULT 0,
-    estimated_days INTEGER,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Tabla para Categorías de Estado
-CREATE TABLE status_categories (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE,
-    description VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Tabla para Tipos de Estado
-CREATE TABLE status_types (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    category_id INTEGER NOT NULL REFERENCES status_categories(id) ON DELETE RESTRICT,
-    description VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(name, category_id)
 );
