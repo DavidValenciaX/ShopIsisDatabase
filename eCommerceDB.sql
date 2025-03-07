@@ -88,7 +88,6 @@ CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     total_amount DECIMAL(10, 2) NOT NULL,
-    status VARCHAR(100) NOT NULL,
     address VARCHAR(255) NOT NULL,
     postal_code VARCHAR(50) NOT NULL,
     phone VARCHAR(50) NOT NULL,
@@ -96,14 +95,15 @@ CREATE TABLE orders (
     credit_card_number VARCHAR(255) NOT NULL,
     invoice_number VARCHAR(100),
     payment_method_id INTEGER REFERENCES payment_methods(id) ON DELETE RESTRICT,
-    payment_status VARCHAR(50) CHECK (payment_status IN ('pending', 'partial', 'paid', 'refunded')) DEFAULT 'pending',
     shipping_method VARCHAR(100),
     shipping_cost DECIMAL(10, 2) DEFAULT 0,
     tax_amount DECIMAL(10, 2) DEFAULT 0,
     discount_amount DECIMAL(10, 2) DEFAULT 0,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
+    payment_status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT
 );
 
 -- Tabla de Productos en una Orden
@@ -123,10 +123,10 @@ CREATE TABLE suppliers (
     phone VARCHAR(100) NOT NULL,
     address VARCHAR(255) NOT NULL,
     tax_id VARCHAR(100),
-    status VARCHAR(50) CHECK (status IN ('active', 'inactive', 'suspended')) DEFAULT 'active',
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT
 );
 
 -- Tabla de Inventario
@@ -151,13 +151,13 @@ CREATE TABLE purchase_orders (
     order_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expected_delivery_date TIMESTAMP,
     actual_delivery_date TIMESTAMP,
-    status VARCHAR(50) CHECK (status IN ('draft', 'ordered', 'partial', 'delivered', 'cancelled')) DEFAULT 'draft',
     total_amount DECIMAL(12, 2) NOT NULL DEFAULT 0,
-    payment_status VARCHAR(50) CHECK (payment_status IN ('pending', 'partial', 'paid', 'refunded')) DEFAULT 'pending',
     notes TEXT,
     created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
+    payment_status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT
 );
 
 -- Tabla de Elementos de Compras
@@ -168,19 +168,19 @@ CREATE TABLE purchase_order_items (
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     unit_price DECIMAL(10, 2) NOT NULL,
     received_quantity INTEGER DEFAULT 0 CHECK (received_quantity >= 0),
-    status VARCHAR(50) CHECK (status IN ('pending', 'partial', 'complete', 'rejected')) DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT
 );
 
 -- Tabla para Historial de Movimientos de Inventario
 CREATE TABLE inventory_transactions (
     id SERIAL PRIMARY KEY,
     product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-    quantity INTEGER NOT NULL, -- Negativo para salidas, positivo para entradas
+    quantity INTEGER NOT NULL,
     transaction_type VARCHAR(50) CHECK (transaction_type IN ('purchase', 'sale', 'adjustment', 'return', 'transfer')) NOT NULL,
-    reference_id INTEGER, -- ID de la orden asociada (venta, compra, etc.)
-    reference_type VARCHAR(50), -- Tipo de la orden ('order', 'purchase_order', etc.)
+    reference_id INTEGER,
+    reference_type VARCHAR(50),
     reason TEXT,
     previous_stock INTEGER NOT NULL,
     new_stock INTEGER NOT NULL,
@@ -211,11 +211,11 @@ CREATE TABLE sales_returns (
     order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE RESTRICT,
     return_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     total_amount DECIMAL(10, 2) NOT NULL,
-    status VARCHAR(50) CHECK (status IN ('pending', 'approved', 'rejected', 'completed')) DEFAULT 'pending',
     reason TEXT,
     processed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT
 );
 
 -- Tabla para Items de Devoluciones de Ventas
@@ -238,11 +238,11 @@ CREATE TABLE purchase_returns (
     purchase_order_id INTEGER NOT NULL REFERENCES purchase_orders(id) ON DELETE RESTRICT,
     return_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     total_amount DECIMAL(10, 2) NOT NULL,
-    status VARCHAR(50) CHECK (status IN ('pending', 'sent', 'completed', 'rejected')) DEFAULT 'pending',
     reason TEXT,
     processed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT
 );
 
 -- Tabla para Items de Devoluciones a Proveedores
@@ -279,3 +279,72 @@ CREATE TABLE payment_methods (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Tabla para Categorías de Estado
+CREATE TABLE status_categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla para Tipos de Estado
+CREATE TABLE status_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    category_id INTEGER NOT NULL REFERENCES status_categories(id) ON DELETE RESTRICT,
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(name, category_id)
+);
+
+-- Insertar datos iniciales en status_categories
+INSERT INTO status_categories (name, description) VALUES
+('payment', 'Estados de pago'),
+('supplier', 'Estados de proveedores'),
+('order', 'Estados de órdenes'),
+('purchase_order', 'Estados de órdenes de compra'),
+('purchase_item', 'Estados de ítems de compra'),
+('return', 'Estados de devoluciones');
+
+-- Insertar datos iniciales en status_types
+INSERT INTO status_types (name, category_id, description) VALUES
+-- Payment statuses
+('pending', (SELECT id FROM status_categories WHERE name = 'payment'), 'Pago pendiente'),
+('partial', (SELECT id FROM status_categories WHERE name = 'payment'), 'Pago parcial'),
+('paid', (SELECT id FROM status_categories WHERE name = 'payment'), 'Pago completado'),
+('refunded', (SELECT id FROM status_categories WHERE name = 'payment'), 'Pago reembolsado'),
+
+-- Supplier statuses
+('active', (SELECT id FROM status_categories WHERE name = 'supplier'), 'Proveedor activo'),
+('inactive', (SELECT id FROM status_categories WHERE name = 'supplier'), 'Proveedor inactivo'),
+('suspended', (SELECT id FROM status_categories WHERE name = 'supplier'), 'Proveedor suspendido'),
+
+-- order status
+('pending', (SELECT id FROM status_categories WHERE name = 'order'), 'Orden recibida'),
+('processing', (SELECT id FROM status_categories WHERE name = 'order'), 'En preparación'),
+('shipped', (SELECT id FROM status_categories WHERE name = 'order'), 'Enviado'),
+('delivered', (SELECT id FROM status_categories WHERE name = 'order'), 'Entregado'),
+('cancelled', (SELECT id FROM status_categories WHERE name = 'order'), 'Cancelado');
+
+-- Purchase order statuses
+('draft', (SELECT id FROM status_categories WHERE name = 'purchase_order'), 'Orden en borrador'),
+('ordered', (SELECT id FROM status_categories WHERE name = 'purchase_order'), 'Orden realizada'),
+('partial', (SELECT id FROM status_categories WHERE name = 'purchase_order'), 'Orden parcialmente entregada'),
+('delivered', (SELECT id FROM status_categories WHERE name = 'purchase_order'), 'Orden entregada'),
+('cancelled', (SELECT id FROM status_categories WHERE name = 'purchase_order'), 'Orden cancelada'),
+
+-- Purchase order item statuses
+('pending', (SELECT id FROM status_categories WHERE name = 'purchase_item'), 'Ítem pendiente'),
+('partial', (SELECT id FROM status_categories WHERE name = 'purchase_item'), 'Ítem parcialmente recibido'),
+('complete', (SELECT id FROM status_categories WHERE name = 'purchase_item'), 'Ítem completado'),
+('rejected', (SELECT id FROM status_categories WHERE name = 'purchase_item'), 'Ítem rechazado'),
+
+-- Return statuses
+('pending', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución pendiente'),
+('approved', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución aprobada'),
+('rejected', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución rechazada'),
+('completed', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución completada'),
+('sent', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución enviada'),
