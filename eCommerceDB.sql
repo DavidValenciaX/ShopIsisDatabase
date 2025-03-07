@@ -34,7 +34,6 @@ CREATE TABLE users (
     phone VARCHAR(50),
     token VARCHAR(255),
     confirmed BOOLEAN DEFAULT FALSE,
-    default_payment_method_id INTEGER REFERENCES user_payment_methods(id),
     role_id INTEGER REFERENCES roles(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -102,7 +101,6 @@ CREATE TABLE orders (
     last_four_digits VARCHAR(4),
     card_brand  VARCHAR(50),
     user_payment_method_id INTEGER REFERENCES user_payment_methods(id),
-    payment_method_id INTEGER REFERENCES payment_methods(id) ON DELETE RESTRICT,
     shipping_method_id INTEGER REFERENCES shipping_methods(id) ON DELETE RESTRICT,
     status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
     payment_status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
@@ -274,16 +272,27 @@ CREATE TABLE returned_inventory (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabla de Métodos de Pago
+CREATE TABLE payment_methods (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE user_payment_methods (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    payment_token VARCHAR(255) NOT NULL, -- Token reutilizable de la pasarela
-    last_four_digits VARCHAR(4), -- Últimos 4 dígitos de la tarjeta (para mostrar al usuario)
-    card_brand VARCHAR(50), -- Ejemplo: Visa, Mastercard
-    payment_gateway_name VARCHAR(100) NOT NULL,  -- Stripe, PayPal, etc.
+    payment_token VARCHAR(255) NOT NULL,
+    last_four_digits VARCHAR(4),
+    card_brand VARCHAR(50),
+    payment_gateway_name VARCHAR(100) NOT NULL,
     exp_month VARCHAR(2),
     exp_year VARCHAR(4),
     is_default BOOLEAN DEFAULT FALSE,
+    payment_method_id INTEGER REFERENCES payment_methods(id) ON DELETE RESTRICT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -299,16 +308,6 @@ CREATE TABLE payment_transactions (
     currency VARCHAR(3) DEFAULT 'USD',
     status VARCHAR(50) NOT NULL,
     provider_response TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Tabla de Métodos de Pago
-CREATE TABLE payment_methods (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE,
-    description VARCHAR(255),
-    active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
