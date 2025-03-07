@@ -26,7 +26,7 @@ CREATE TABLE role_permissions (
 -- Tabla de Usuarios
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     address VARCHAR(255),
@@ -34,7 +34,7 @@ CREATE TABLE users (
     phone VARCHAR(50),
     credit_card_number VARCHAR(255),
     token VARCHAR(255),
-    confirmado BOOLEAN DEFAULT FALSE,
+    confirmed BOOLEAN DEFAULT FALSE,
     role_id INTEGER REFERENCES roles(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -88,10 +88,10 @@ CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     total_amount DECIMAL(10, 2) NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    postal_code VARCHAR(50) NOT NULL,
-    phone VARCHAR(50) NOT NULL,
-    email VARCHAR(255) NOT NULL,
+    shipping_address VARCHAR(255) NOT NULL,
+    shipping_postal_code VARCHAR(50) NOT NULL,
+    contact_phone VARCHAR(50) NOT NULL,
+    billing_email VARCHAR(255) NOT NULL,
     credit_card_number VARCHAR(255) NOT NULL,
     invoice_number VARCHAR(100),
     shipping_cost DECIMAL(10, 2) DEFAULT 0,
