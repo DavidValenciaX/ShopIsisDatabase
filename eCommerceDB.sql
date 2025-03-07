@@ -286,12 +286,9 @@ CREATE TABLE user_payment_methods (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     payment_token VARCHAR(255) NOT NULL,
-    last_four_digits VARCHAR(4),
-    card_brand VARCHAR(50),
     payment_gateway_name VARCHAR(100) NOT NULL,
-    exp_month VARCHAR(2),
-    exp_year VARCHAR(4),
     is_default BOOLEAN DEFAULT FALSE,
+    details JSONB NOT NULL,
     payment_method_id INTEGER REFERENCES payment_methods(id) ON DELETE RESTRICT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
