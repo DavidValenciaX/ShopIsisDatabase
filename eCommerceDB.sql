@@ -32,9 +32,9 @@ CREATE TABLE users (
     address VARCHAR(255),
     postal_code VARCHAR(50),
     phone VARCHAR(50),
-    credit_card_number VARCHAR(255),
     token VARCHAR(255),
     confirmed BOOLEAN DEFAULT FALSE,
+    default_payment_method_id INTEGER REFERENCES user_payment_methods(id),
     role_id INTEGER REFERENCES roles(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -92,12 +92,16 @@ CREATE TABLE orders (
     shipping_postal_code VARCHAR(50) NOT NULL,
     contact_phone VARCHAR(50) NOT NULL,
     billing_email VARCHAR(255) NOT NULL,
-    credit_card_number VARCHAR(255) NOT NULL,
     invoice_number VARCHAR(100),
     shipping_cost DECIMAL(10, 2) DEFAULT 0,
     tax_amount DECIMAL(10, 2) DEFAULT 0,
     discount_amount DECIMAL(10, 2) DEFAULT 0,
     notes TEXT,
+    payment_token VARCHAR(255),
+    payment_gateway_name VARCHAR(100),
+    last_four_digits VARCHAR(4),
+    card_brand  VARCHAR(50),
+    user_payment_method_id INTEGER REFERENCES user_payment_methods(id),
     payment_method_id INTEGER REFERENCES payment_methods(id) ON DELETE RESTRICT,
     shipping_method_id INTEGER REFERENCES shipping_methods(id) ON DELETE RESTRICT,
     status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
@@ -266,6 +270,35 @@ CREATE TABLE returned_inventory (
     condition VARCHAR(50) NOT NULL,
     sales_return_item_id INTEGER REFERENCES sales_return_items(id),
     notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE user_payment_methods (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    payment_token VARCHAR(255) NOT NULL, -- Token reutilizable de la pasarela
+    last_four_digits VARCHAR(4), -- Últimos 4 dígitos de la tarjeta (para mostrar al usuario)
+    card_brand VARCHAR(50), -- Ejemplo: Visa, Mastercard
+    payment_gateway_name VARCHAR(100) NOT NULL,  -- Stripe, PayPal, etc.
+    exp_month VARCHAR(2),
+    exp_year VARCHAR(4),
+    is_default BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Crear tabla para transacciones de pago
+CREATE TABLE payment_transactions (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER REFERENCES orders(id) ON DELETE SET NULL,
+    payment_method_id INTEGER REFERENCES payment_methods(id) ON DELETE RESTRICT,
+    payment_token VARCHAR(255),
+    transaction_id VARCHAR(255) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'USD',
+    status VARCHAR(50) NOT NULL,
+    provider_response TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
