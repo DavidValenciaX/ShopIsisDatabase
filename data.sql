@@ -66,7 +66,10 @@ INSERT INTO transaction_types (name, description) VALUES
 ('sale', 'Salida de inventario por venta a clientes'),
 ('adjustment', 'Ajuste manual de inventario'),
 ('return', 'Devolución de productos'),
-('transfer', 'Transferencia entre ubicaciones');
+('transfer', 'Transferencia entre ubicaciones'),
+('Return Received', 'Productos devueltos recibidos en cuarentena'),
+('Return Restocked', 'Productos aprobados y reintegrados al inventario'),
+('Return Discarded', 'Productos descartados definitivamente');
 
 -- Insertar valores iniciales para las condiciones de devolución
 INSERT INTO return_conditions (name) VALUES
