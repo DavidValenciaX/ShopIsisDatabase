@@ -305,7 +305,7 @@ CREATE TABLE purchase_orders (
     notes TEXT,
     status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
     payment_status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
-    created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_by INTEGER REFERENCES users(id) ON DELETE RESTRICT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -356,7 +356,7 @@ CREATE TABLE sales_returns (
     return_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     total_amount DECIMAL(10, 2) NOT NULL,
     reason TEXT,
-    processed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    processed_by INTEGER REFERENCES users(id) ON DELETE RESTRICT,
     status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -392,7 +392,7 @@ CREATE TABLE purchase_returns (
     return_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     total_amount DECIMAL(10, 2) NOT NULL,
     reason TEXT,
-    processed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    processed_by INTEGER REFERENCES users(id) ON DELETE RESTRICT,
     status_id INTEGER REFERENCES status_types(id) ON DELETE RESTRICT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -422,7 +422,7 @@ CREATE TABLE inventory_transactions (
     reason TEXT,
     previous_stock INTEGER NOT NULL,
     new_stock INTEGER NOT NULL,
-    performed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    performed_by INTEGER REFERENCES users(id) ON DELETE RESTRICT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
