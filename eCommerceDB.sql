@@ -66,7 +66,9 @@ CREATE TABLE products (
     name VARCHAR(255) NOT NULL,
     thumbnail VARCHAR(255) NOT NULL,
     description TEXT,
-    dimensions VARCHAR(100),
+    width DECIMAL(10, 2),
+    height DECIMAL(10, 2),
+    depth DECIMAL(10, 2),
     weight DECIMAL(10, 2),
     price DECIMAL(10, 2) NOT NULL,
     currency_id INTEGER NOT NULL REFERENCES currencies(id) ON DELETE RESTRICT,
@@ -199,6 +201,7 @@ CREATE TABLE discounts (
     usage_limit INTEGER,
     times_used INTEGER DEFAULT 0,
     is_active BOOLEAN DEFAULT TRUE,
+    exclusive BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CHECK (usage_limit IS NULL OR times_used <= usage_limit)
