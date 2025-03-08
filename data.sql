@@ -102,3 +102,34 @@ INSERT INTO currencies (code, name, symbol) VALUES
 INSERT INTO discount_types (name, description) VALUES 
 ('percentage', 'Discount as a percentage of the total amount'),
 ('fixed_amount', 'Discount as a fixed monetary amount');
+
+-- Inicializar los tipos de medidas
+INSERT INTO measurement_types (name, description) VALUES
+('Length', 'Units for measuring distances and dimensions'),
+('Weight', 'Units for measuring mass'),
+('Volume', 'Units for measuring volume of liquids or solids'),
+('Area', 'Units for measuring surface area'),
+('Temperature', 'Units for measuring temperature');
+
+-- Inicializar unidades de medida comunes
+-- Length units
+INSERT INTO units_of_measure (name, symbol, measurement_type_id, base_unit, conversion_factor, description) VALUES
+('Meter', 'm', 1, TRUE, 1.0, 'Base unit for length'),
+('Centimeter', 'cm', 1, FALSE, 0.01, '1/100 of a meter'),
+('Millimeter', 'mm', 1, FALSE, 0.001, '1/1000 of a meter'),
+('Inch', 'in', 1, FALSE, 0.0254, 'Imperial unit for length'),
+('Foot', 'ft', 1, FALSE, 0.3048, 'Imperial unit for length');
+
+-- Weight units
+INSERT INTO units_of_measure (name, symbol, measurement_type_id, base_unit, conversion_factor, description) VALUES
+('Kilogram', 'kg', 2, TRUE, 1.0, 'Base unit for weight'),
+('Gram', 'g', 2, FALSE, 0.001, '1/1000 of a kilogram'),
+('Pound', 'lb', 2, FALSE, 0.45359237, 'Imperial unit for weight'),
+('Ounce', 'oz', 2, FALSE, 0.028349523125, 'Imperial unit for weight');
+
+-- Volume units
+INSERT INTO units_of_measure (name, symbol, measurement_type_id, base_unit, conversion_factor, description) VALUES
+('Liter', 'L', 3, TRUE, 1.0, 'Base unit for volume'),
+('Milliliter', 'mL', 3, FALSE, 0.001, '1/1000 of a liter'),
+('Gallon (US)', 'gal', 3, FALSE, 3.78541, 'US unit for volume'),
+('Fluid Ounce (US)', 'fl oz', 3, FALSE, 0.0295735, 'US unit for volume');
