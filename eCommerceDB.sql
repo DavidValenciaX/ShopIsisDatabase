@@ -467,7 +467,7 @@ CREATE TABLE payment_transactions (
     transaction_id VARCHAR(255) NOT NULL UNIQUE,
     amount DECIMAL(10, 2) NOT NULL,
     currency_id INTEGER NOT NULL REFERENCES currencies(id) ON DELETE RESTRICT,
-    status VARCHAR(50) NOT NULL,
+    status_id INTEGER NOT NULL REFERENCES status_types(id) ON DELETE RESTRICT,
     provider_response JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

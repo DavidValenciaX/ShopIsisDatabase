@@ -5,7 +5,8 @@ INSERT INTO status_categories (name, description) VALUES
 ('order', 'Estados de órdenes'),
 ('purchase_order', 'Estados de órdenes de compra'),
 ('purchase_item', 'Estados de ítems de compra'),
-('return', 'Estados de devoluciones');
+('return', 'Estados de devoluciones'),
+('payment_transaction', 'Estados de transacciones de pago');
 
 -- Insertar datos iniciales en status_types
 INSERT INTO status_types (name, category_id, description) VALUES
@@ -46,7 +47,15 @@ INSERT INTO status_types (name, category_id, description) VALUES
 ('rejected', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución rechazada'),
 ('completed', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución completada'),
 ('sent', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución enviada'),
-('discarded', (SELECT id FROM status_categories WHERE name = 'return'), 'Producto descartado por problemas de calidad');
+('discarded', (SELECT id FROM status_categories WHERE name = 'return'), 'Producto descartado por problemas de calidad'),
+
+-- Payment transaction statuses
+('initiated', (SELECT id FROM status_categories WHERE name = 'payment_transaction'), 'Transacción iniciada'),
+('processing', (SELECT id FROM status_categories WHERE name = 'payment_transaction'), 'Transacción en proceso'),
+('succeeded', (SELECT id FROM status_categories WHERE name = 'payment_transaction'), 'Transacción exitosa'),
+('failed', (SELECT id FROM status_categories WHERE name = 'payment_transaction'), 'Transacción fallida'),
+('cancelled', (SELECT id FROM status_categories WHERE name = 'payment_transaction'), 'Transacción cancelada'),
+('refunded', (SELECT id FROM status_categories WHERE name = 'payment_transaction'), 'Transacción reembolsada');
 
 -- Insertar datos iniciales en shipping_methods
 INSERT INTO shipping_methods (name, description, price, estimated_days) VALUES
