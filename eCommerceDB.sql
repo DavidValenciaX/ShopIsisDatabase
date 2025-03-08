@@ -442,7 +442,7 @@ CREATE TABLE return_holds (
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     condition_id INTEGER NOT NULL REFERENCES return_conditions(id) ON DELETE RESTRICT,
     location_id INTEGER NOT NULL REFERENCES inventory_locations(id) ON DELETE RESTRICT,
-    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'discarded')),
+    status_id INTEGER NOT NULL REFERENCES status_types(id) ON DELETE RESTRICT,
     resolution_notes TEXT,
     inspected_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
     inspected_at TIMESTAMP,

@@ -25,7 +25,7 @@ INSERT INTO status_types (name, category_id, description) VALUES
 ('processing', (SELECT id FROM status_categories WHERE name = 'order'), 'En preparación'),
 ('shipped', (SELECT id FROM status_categories WHERE name = 'order'), 'Enviado'),
 ('delivered', (SELECT id FROM status_categories WHERE name = 'order'), 'Entregado'),
-('cancelled', (SELECT id FROM status_categories WHERE name = 'order'), 'Cancelado');
+('cancelled', (SELECT id FROM status_categories WHERE name = 'order'), 'Cancelado'),
 
 -- Purchase order statuses
 ('draft', (SELECT id FROM status_categories WHERE name = 'purchase_order'), 'Orden en borrador'),
@@ -45,7 +45,8 @@ INSERT INTO status_types (name, category_id, description) VALUES
 ('approved', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución aprobada'),
 ('rejected', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución rechazada'),
 ('completed', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución completada'),
-('sent', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución enviada');
+('sent', (SELECT id FROM status_categories WHERE name = 'return'), 'Devolución enviada'),
+('discarded', (SELECT id FROM status_categories WHERE name = 'return'), 'Producto descartado por problemas de calidad');
 
 -- Insertar datos iniciales en shipping_methods
 INSERT INTO shipping_methods (name, description, price, estimated_days) VALUES
