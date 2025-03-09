@@ -133,3 +133,16 @@ INSERT INTO units_of_measure (name, symbol, measurement_type_id, base_unit, conv
 ('Milliliter', 'mL', 3, FALSE, 0.001, '1/1000 of a liter'),
 ('Gallon (US)', 'gal', 3, FALSE, 3.78541, 'US unit for volume'),
 ('Fluid Ounce (US)', 'fl oz', 3, FALSE, 0.0295735, 'US unit for volume');
+
+-- Insertar tipos de interacciones de usuario con productos
+INSERT INTO interaction_types (name, description) VALUES
+('view', 'Usuario vio la página del producto'),
+('search', 'Usuario encontró el producto a través de búsqueda'),
+('add_to_cart', 'Usuario añadió el producto al carrito'),
+('add_to_wishlist', 'Usuario añadió el producto a su lista de deseos'),
+('purchase', 'Usuario compró el producto'),
+('review', 'Usuario dejó una reseña del producto'),
+('share', 'Usuario compartió el producto en redes sociales'),
+('compare', 'Usuario añadió el producto a comparación'),
+('question', 'Usuario hizo una pregunta sobre el producto'),
+('return', 'Usuario devolvió el producto');
